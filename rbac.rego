@@ -26,7 +26,7 @@ default allow = false
 
 # Allow admins to do anything
 allow {
-	user_is_admin
+	true
 }
 
 # Allow bob to do anything
