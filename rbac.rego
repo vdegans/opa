@@ -29,6 +29,10 @@ allow {
 	input.request.headers.user == "bob"
 }
 
+allow {
+	input.request.json.input.user == "bob"
+}
+
 # Allow bob to do anything
 allow {
 	input.user == "bob"
