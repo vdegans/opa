@@ -1,0 +1,9 @@
+{
+  "allowed_fields": [
+    "adressering",
+    "geboorte",
+    "geslacht",
+    "leeftijd",
+    "naam"
+  ]
+}
