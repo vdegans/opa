@@ -2,26 +2,33 @@ package api.authz
 
 default allow = false
 
-# Allow only if all requested fields are whitelisted
 allow {
-    valid_fields
+    has_fields
+    no_invalid_fields
 }
 
-# Ensure every field in the request is allowed
-valid_fields {
-    requested := input.request.body.fields
+# Ensure fields exist
+has_fields {
+    fields := input.request.body.fields
+    is_array(fields)
+}
 
-    # Set of fields that are not allowed
+# Ensure all fields are whitelisted
+no_invalid_fields {
+    fields := input.request.body.fields
+
     invalid := {
-        f |
-        f := requested[_]
-        not allowed_field(f)
+        field |
+        some i
+        field := fields[i]
+        not allowed_field(field)
     }
 
     count(invalid) == 0
 }
 
-# Field whitelist (configurable via data)
+# Whitelist lookup (configurable via data)
 allowed_field(field) {
-    field == fields.allowed_fields[_]
+    some i
+    field == data.allowed_fields[i]
 }
