@@ -9,7 +9,7 @@ allow {
 
 # Ensure every field in the request is allowed
 valid_fields {
-    requested := input.body.fields
+    requested := input.request.body.fields
 
     # Set of fields that are not allowed
     invalid := {
