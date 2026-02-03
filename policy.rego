@@ -1,42 +1,37 @@
 package api.authz
 
 import future.keywords.in
-import future.keywords.if
 
+# Default deny
 default allow = false
+default denied_fields = {}
 
-allow {
-    has_fields
-    no_invalid_fields
-}
-
-# Helper: parse the body from the header
+###########################
+# Helper: parse header safely
+###########################
 raw_body := input.request.headers["x-original-body"]
 
-parsed_body := json.unmarshal(urlquery.decode(raw_body))
+parsed_body := json.unmarshal(urlquery.decode(raw_body)) {
+    raw_body != ""
+} else = {}
 
-# Ensure fields exist
-has_fields {
-    fields := parsed_body.fields
-    is_array(fields)
+###########################
+# Normalize and clean requested fields
+###########################
+# Strip whitespace and convert to lowercase
+clean_field(f) = t {
+    t := lower(trim(f, " \t\r\n"))
 }
 
-# Ensure all fields are whitelisted
-no_invalid_fields {
-    fields := parsed_body.fields
+requested_fields := { clean_field(f) | f := parsed_body.fields[_] }
 
-    invalid := {
-        field |
-        some i
-        field := fields[i]
-        not allowed_field(field)
-    }
+# Normalize allowed fields as well
+allowed_fields_set := { clean_field(f) | f := data.allowed_fields[_] }
 
-    count(invalid) == 0
-}
+# Denied fields = requested - allowed
+denied_fields := requested_fields - allowed_fields_set
 
-# Whitelist lookup (from data.allowed_fields)
-allowed_field(field) {
-    some i
-    field == data.allowed_fields[i]
+# Allow only if no denied fields exist
+allow {
+    count(denied_fields) == 0
 }
