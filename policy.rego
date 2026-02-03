@@ -1,5 +1,8 @@
 package api.authz
 
+import future.keywords.in
+import future.keywords.if
+
 default allow = false
 
 allow {
@@ -7,15 +10,20 @@ allow {
     no_invalid_fields
 }
 
+# Helper: parse the body from the header
+raw_body := input.request.headers["x-original-body"]
+
+parsed_body := json.unmarshal(urlquery.decode(raw_body))
+
 # Ensure fields exist
 has_fields {
-    fields := input.request.body.fields
+    fields := parsed_body.fields
     is_array(fields)
 }
 
 # Ensure all fields are whitelisted
 no_invalid_fields {
-    fields := input.request.body.fields
+    fields := parsed_body.fields
 
     invalid := {
         field |
@@ -27,7 +35,7 @@ no_invalid_fields {
     count(invalid) == 0
 }
 
-# Whitelist lookup (configurable via data)
+# Whitelist lookup (from data.allowed_fields)
 allowed_field(field) {
     some i
     field == data.allowed_fields[i]
