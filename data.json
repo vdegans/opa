@@ -1,4 +1,13 @@
 {
+  "allowed_fields": [
+    "adressering",
+    "burgerservicenummer",
+    "geboorte",
+    "geslacht",
+    "leeftijd",
+    "naam",
+    "adresseringBinnenland"
+  ],
   "users": {
     "alice": {
       "roles": ["admin"],
