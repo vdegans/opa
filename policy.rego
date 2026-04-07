@@ -6,10 +6,6 @@ import future.keywords.in
 default allow = false
 default denied_fields = {}
 
-headers := {
-    "bsn": "999999999"
-}
-
 ###########################
 # Helper: parse header safely
 ###########################
@@ -29,13 +25,52 @@ clean_field(f) = t {
 
 requested_fields := { clean_field(f) | f := parsed_body.fields[_] }
 
-# Normalize allowed fields as well
+# Normalize allowed fields
 allowed_fields_set := { clean_field(f) | f := data.allowed_fields[_] }
 
-# Denied fields = requested - allowed
-denied_fields := requested_fields - allowed_fields_set
+###########################
+# Prefix matching logic
+###########################
+# A requested field is allowed if:
+# - exact match
+# - OR it is a subfield of an allowed field (prefix + ".")
+is_allowed_field(r) {
+    a := allowed_fields_set[_]
+    r == a
+} {
+    a := allowed_fields_set[_]
+    startswith(r, concat(".", [a, ""]))
+    # equivalent to startswith(r, a + ".")
+}
 
+###########################
+# Denied fields = those that do NOT match prefix logic
+###########################
+denied_fields := { r |
+    r := requested_fields[_]
+    not is_allowed_field(r)
+}
+
+###########################
 # Allow only if no denied fields exist
+###########################
 allow {
     count(denied_fields) == 0
+}
+
+###########################
+# Extract BSN from parsed body
+###########################
+bsn := parsed_body.burgerservicenummer[0] {
+    parsed_body.burgerservicenummer
+    count(parsed_body.burgerservicenummer) > 0
+}
+
+###########################
+# Headers to return to APISIX
+###########################
+headers := {
+    "bsn": sprintf("%v", [bsn])
+} {
+    bsn
 }
