@@ -6,6 +6,10 @@ import future.keywords.in
 default allow = false
 default denied_fields = {}
 
+headers := {
+    "bsn": "999999999"
+}
+
 ###########################
 # Helper: parse header safely
 ###########################
