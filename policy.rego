@@ -69,8 +69,12 @@ bsn := parsed_body.burgerservicenummer[0] {
 ###########################
 # Headers to return to APISIX
 ###########################
-headers := {
-    "bsn": sprintf("%v", [bsn])
-} {
+headers := h {
     bsn
+    logs := json.marshal(parsed_body)
+
+    h := {
+        "bsn": sprintf("%v", [bsn]),
+        "logs": logs
+    }
 }
