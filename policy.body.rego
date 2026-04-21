@@ -1,4 +1,4 @@
-package api.fields.authz
+package api.body.authz
 
 import future.keywords.in
 
